@@ -82,7 +82,7 @@ function Panel({operations, onClick, onClickClean}) {
       : operations.filter(op => op.type === tabSelected);
   operationsFiltered = filter
     ? operationsFiltered.filter(
-        op => toLw(op.operationName).indexOf(filter) !== -1,
+        op => toLw(op.operationName).indexOf(filter) !== -1 || toLw(op.query).indexOf(filter) !== -1 ,
       )
     : operationsFiltered;
 
@@ -225,7 +225,7 @@ const Content = ({operation}) => {
   const [showContent, setShowContent] = React.useState(false);
 
   React.useEffect(() => {
-      setShowContent(false);
+      setShowContent(operation.size<2000);
   }, [operation]);
 
   React.useEffect(() => {
@@ -244,6 +244,7 @@ const Content = ({operation}) => {
       <div className="content-button is-flex">
       {!showContent && <button onClick={()=>setShowContent(true)}>Show content with {operation.size/1000}kb</button>}
       {showContent && <ReactJson
+        collapsed={1}
         theme="summerfruit"
         displayDataTypes={false}
         src={JSON.parse(content)}

@@ -32565,7 +32565,7 @@ function Panel(_ref4) {
     return op.type === tabSelected;
   });
   operationsFiltered = filter ? operationsFiltered.filter(function (op) {
-    return toLw(op.operationName).indexOf(filter) !== -1;
+    return toLw(op.operationName).indexOf(filter) !== -1 || toLw(op.query).indexOf(filter) !== -1;
   }) : operationsFiltered;
   return react.createElement("nav", {
     className: "panel"
@@ -32706,6 +32706,7 @@ function NewApp() {
   })))), react.createElement(Column, {
     borderLeft: true,
     scrollabled: true,
+    "is-column": true,
     "is-half": true,
     "is-flex": true
   }, react.createElement(Content, {
@@ -32727,7 +32728,7 @@ var Content = function Content(_ref7) {
       setShowContent = _React$useState12[1];
 
   react.useEffect(function () {
-    setShowContent(false);
+    setShowContent(operation.size < 2000);
   }, [operation]);
   react.useEffect(function () {
     if (!showContent) {
@@ -32747,6 +32748,7 @@ var Content = function Content(_ref7) {
       return setShowContent(true);
     }
   }, "Show content with ", operation.size / 1000, "kb"), showContent && react.createElement(ReactJson, {
+    collapsed: 1,
     theme: "summerfruit",
     displayDataTypes: false,
     src: JSON.parse(content)
