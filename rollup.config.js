@@ -7,7 +7,7 @@ import replace from "rollup-plugin-replace";
 export default {
   input: 'src/panel.js',
   output: {
-    file: 'public/dist/panel.js',
+    file: 'devtools-extension/dist/panel.js',
     format: 'esm'
   },
   plugins: [

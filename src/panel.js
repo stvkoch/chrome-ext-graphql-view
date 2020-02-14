@@ -8,6 +8,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 // import JSONTree from 'react-json-tree';
 import ReactJson from 'react-json-view';
+import get from 'lodash.get';
+import gql from 'graphql-tag';
+
 
 let subscriptions = Object.create(null);
 
@@ -69,7 +72,7 @@ function Column({children, isSidebar, ...props}) {
   );
 }
 
-function Panel({operations, onClick}) {
+function Panel({operations, onClick, onClickClean}) {
   const [tabSelected, setTabSelected] = React.useState('all');
   const [filter, setFilter] = React.useState(null);
 
@@ -129,7 +132,7 @@ function Panel({operations, onClick}) {
       </div>
 
       <div className="panel-footer">
-        <div className="panel-block">Total: {operationsFiltered.length}  <i className="fas fa-ban go-right is-pulled-right" /></div>
+        <div className="panel-block">Total: {operationsFiltered.length}  <a  onClick={onClickClean} className=" go-right is-pulled-right"><i className="fas fa-ban"/></a></div>
       </div>
     </nav>
   );
@@ -151,12 +154,12 @@ function PanelItem({operation, selected, onClick = noop}) {
           aria-hidden="true"
         />
       </span>
-      {operation.operationName}
+      {operation.name}
     </a>
   );
 }
 
-const operations = [];
+let operations = [];
 
 function NewApp() {
   const [tick, forceUpdate] = React.useState(0);
@@ -168,10 +171,15 @@ function NewApp() {
     });
   }, []);
 
+    const onClickClean = React.useCallback(()=> {
+        operations = [];
+        forceUpdate(operations.length);
+    }, [forceUpdate]);
+
   return (
     <Layout>
       <Column isSidebar>
-        <Panel tick={tick} operations={operations} onClick={setOperation} />
+        <Panel tick={tick} operations={operations} onClick={setOperation} onClickClean={onClickClean} />
       </Column>
       <Column>
         {operation && (
@@ -241,12 +249,27 @@ ReactDOM.render(<NewApp />, document.getElementById('root'));
 function parseHar(entry) {
   const {request, response} = entry;
   const gqRequest = graphqlRequest(request);
-  if (!(gqRequest && gqRequest.query)) return null;
+  if (!(gqRequest)) return null;
+
+  const ast = gql`
+  ${gqRequest.query}
+  `;
+  const name = ast.definitions.map(d =>  {
+    const selectionName = get(d, 'selectionSet.selections').map(s=> get(s,'name.value')).join('+');
+    const definitionName = get(d, 'name.value');
+    console.log('map name', definitionName, selectionName);
+    return definitionName || selectionName;
+  }  ).join('+')
+  
+  console.log('query name', name);
+
+  const type = get(ast, 'definitions').map(d=> d.operation).join('+');
+
 
   const operation = {
     id: Math.random() * 100000000000000000,
-    name: gqRequest.operationName,
-    type: gqRequest.query.indexOf('mutation') >= 0 ? 'mutation' : 'query',
+    name,
+    type,
     ...gqRequest,
     headers: request.headers,
     size: response.headersSize + response.bodySize,
@@ -262,7 +285,7 @@ function graphqlRequest(request) {
     return null;
   try {
     const gqRequest = JSON.parse(request.postData.text);
-    if (gqRequest.operationName) return gqRequest;
+    if ('operationName' in gqRequest) return gqRequest;
   } catch (error) {}
   return null;
 }

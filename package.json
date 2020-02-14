@@ -19,6 +19,9 @@
   "homepage": "https://github.com/thingsinjars/devtools-extension#readme",
   "dependencies": {
     "babel-cli": "^6.26.0",
+    "graphql": "^14.6.0",
+    "graphql-tag": "^2.10.3",
+    "lodash.get": "^4.4.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-json-tree": "^0.11.2",
