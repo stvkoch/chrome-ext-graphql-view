@@ -1,6 +1,8 @@
 DevTools Extension Example
 ===
 
+[Screenshow](https://raw.githubusercontent.com/stvkoch/chrome-ext-graphql-view/master/Screenshot.png)
+
 This is a small boilerplate project to be used as a starting point for developing a Chrome DevTools Extension.
 
 Installation
