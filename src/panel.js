@@ -241,12 +241,14 @@ const Content = ({operation}) => {
   return (
     <React.Fragment>
       <div className={cl('label')}>Content {operation.size/1000}kb</div>
-      {!showContent && <div className="content-button is-flex"><button onClick={()=>setShowContent(true)}>Show content with {operation.size/1000}kb</button></div>}
+      <div className="content-button is-flex">
+      {!showContent && <button onClick={()=>setShowContent(true)}>Show content with {operation.size/1000}kb</button>}
       {showContent && <ReactJson
         theme="summerfruit"
         displayDataTypes={false}
         src={JSON.parse(content)}
       />}
+      </div>
     </React.Fragment>
   );
 };

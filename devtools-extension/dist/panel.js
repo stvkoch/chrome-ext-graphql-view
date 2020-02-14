@@ -32740,17 +32740,17 @@ var Content = function Content(_ref7) {
   if (showContent && !content) return react.createElement("div", null, "Loading...");
   return react.createElement(react.Fragment, null, react.createElement("div", {
     className: cl('label')
-  }, "Content ", operation.size / 1000, "kb"), !showContent && react.createElement("div", {
+  }, "Content ", operation.size / 1000, "kb"), react.createElement("div", {
     className: "content-button is-flex"
-  }, react.createElement("button", {
+  }, !showContent && react.createElement("button", {
     onClick: function onClick() {
       return setShowContent(true);
     }
-  }, "Show content with ", operation.size / 1000, "kb")), showContent && react.createElement(ReactJson, {
+  }, "Show content with ", operation.size / 1000, "kb"), showContent && react.createElement(ReactJson, {
     theme: "summerfruit",
     displayDataTypes: false,
     src: JSON.parse(content)
-  }));
+  })));
 };
 
 reactDom.render(react.createElement(NewApp, null), document.getElementById('root'));
