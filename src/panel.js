@@ -210,7 +210,7 @@ function NewApp() {
                 </div>
               </div>
             </Column>
-            <Column borderLeft scrollabled is-half is-flex>
+            <Column borderLeft scrollabled is-column is-half is-flex>
               <Content operation={operation} />
             </Column>
           </Columns>
