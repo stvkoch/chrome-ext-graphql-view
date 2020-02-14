@@ -222,24 +222,31 @@ function NewApp() {
 
 const Content = ({operation}) => {
   const [content, setContent] = React.useState(null);
+  const [showContent, setShowContent] = React.useState(false);
 
   React.useEffect(() => {
-    setContent(null);
-    operation && operation.getContent(setContent);
+      setShowContent(false);
   }, [operation]);
 
-  console.log('content', content);
+  React.useEffect(() => {
+    if (!showContent) {
+      return;
+    }
+    setContent(null);
+    operation && operation.getContent(setContent);
+  }, [showContent, operation]);
 
-  if (!content) return <div>Loading...</div>;
+  if (showContent && !content) return <div>Loading...</div>;
 
   return (
     <React.Fragment>
-      <div className={cl('label')}>Content</div>
-      <ReactJson
+      <div className={cl('label')}>Content {operation.size/1000}kb</div>
+      {!showContent && <div className="content-button"><button onClick={()=>setShowContent(true)}>Show content with {operation.size/1000}kb</button></div>}
+      {showContent && <ReactJson
         theme="summerfruit"
         displayDataTypes={false}
         src={JSON.parse(content)}
-      />
+      />}
     </React.Fragment>
   );
 };
@@ -261,10 +268,7 @@ function parseHar(entry) {
     return definitionName || selectionName;
   }  ).join('+')
   
-  console.log('query name', name);
-
   const type = get(ast, 'definitions').map(d=> d.operation).join('+');
-
 
   const operation = {
     id: Math.random() * 100000000000000000,
@@ -275,6 +279,9 @@ function parseHar(entry) {
     size: response.headersSize + response.bodySize,
     getContent: entry.getContent.bind(entry),
   };
+
+  console.log('operation', operation);
+
   return operation;
 }
 

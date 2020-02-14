@@ -32720,15 +32720,32 @@ var Content = function Content(_ref7) {
       content = _React$useState10[0],
       setContent = _React$useState10[1];
 
+  var _React$useState11 = react.useState(false),
+      _React$useState12 = _slicedToArray(_React$useState11, 2),
+      showContent = _React$useState12[0],
+      setShowContent = _React$useState12[1];
+
   react.useEffect(function () {
+    setShowContent(false);
+  }, [operation]);
+  react.useEffect(function () {
+    if (!showContent) {
+      return;
+    }
+
     setContent(null);
     operation && operation.getContent(setContent);
-  }, [operation]);
-  console.log('content', content);
-  if (!content) return react.createElement("div", null, "Loading...");
+  }, [showContent, operation]);
+  if (showContent && !content) return react.createElement("div", null, "Loading...");
   return react.createElement(react.Fragment, null, react.createElement("div", {
     className: cl('label')
-  }, "Content"), react.createElement(ReactJson, {
+  }, "Content ", operation.size / 1000, "kb"), !showContent && react.createElement("div", {
+    className: "content-button"
+  }, react.createElement("button", {
+    onClick: function onClick() {
+      return setShowContent(true);
+    }
+  }, "Show content with ", operation.size / 1000, "kb")), showContent && react.createElement(ReactJson, {
     theme: "summerfruit",
     displayDataTypes: false,
     src: JSON.parse(content)
@@ -32751,7 +32768,6 @@ function parseHar(entry) {
     console.log('map name', definitionName, selectionName);
     return definitionName || selectionName;
   }).join('+');
-  console.log('query name', name);
   var type = lodash_get(ast, 'definitions').map(function (d) {
     return d.operation;
   }).join('+');
@@ -32766,6 +32782,7 @@ function parseHar(entry) {
     getContent: entry.getContent.bind(entry)
   });
 
+  console.log('operation', operation);
   return operation;
 }
 
