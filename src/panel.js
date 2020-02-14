@@ -210,7 +210,7 @@ function NewApp() {
                 </div>
               </div>
             </Column>
-            <Column borderLeft scrollabled is-half>
+            <Column borderLeft scrollabled is-half is-flex>
               <Content operation={operation} />
             </Column>
           </Columns>
@@ -241,7 +241,7 @@ const Content = ({operation}) => {
   return (
     <React.Fragment>
       <div className={cl('label')}>Content {operation.size/1000}kb</div>
-      {!showContent && <div className="content-button"><button onClick={()=>setShowContent(true)}>Show content with {operation.size/1000}kb</button></div>}
+      {!showContent && <div className="content-button is-flex"><button onClick={()=>setShowContent(true)}>Show content with {operation.size/1000}kb</button></div>}
       {showContent && <ReactJson
         theme="summerfruit"
         displayDataTypes={false}

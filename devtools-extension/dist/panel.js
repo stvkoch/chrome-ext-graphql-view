@@ -32706,7 +32706,8 @@ function NewApp() {
   })))), react.createElement(Column, {
     borderLeft: true,
     scrollabled: true,
-    "is-half": true
+    "is-half": true,
+    "is-flex": true
   }, react.createElement(Content, {
     operation: operation
   })))));
@@ -32740,7 +32741,7 @@ var Content = function Content(_ref7) {
   return react.createElement(react.Fragment, null, react.createElement("div", {
     className: cl('label')
   }, "Content ", operation.size / 1000, "kb"), !showContent && react.createElement("div", {
-    className: "content-button"
+    className: "content-button is-flex"
   }, react.createElement("button", {
     onClick: function onClick() {
       return setShowContent(true);
