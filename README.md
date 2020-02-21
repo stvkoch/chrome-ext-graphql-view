@@ -3,6 +3,9 @@ Graphql view queries
 
 ![Screenshow](https://raw.githubusercontent.com/stvkoch/chrome-ext-graphql-view/master/Screenshot.png "screenshot")
 
+Fuzzy search over query name and query content
+
+
 Installation
 ===
 
