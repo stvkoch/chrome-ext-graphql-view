@@ -1,7 +1,7 @@
 {
-    "name": "Grapqhql viewer",
+    "name": "Grapqhql viewer and search",
     "version": "0.1",
-    "description": "A bare-bones example of communication between devtools and an inspected page",
+    "description": "Search and visualize your graphql queries, contents, headers and variables",
     "devtools_page": "devtools.html",
     "background": {
         "scripts": [

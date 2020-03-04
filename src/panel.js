@@ -11,8 +11,8 @@ import ReactJson from 'react-json-view';
 import get from 'lodash.get';
 import gql from 'graphql-tag';
 
-
 let subscriptions = Object.create(null);
+const match = (s, m) => s.indexOf(m) > -1;
 
 function subscribe(evt, func) {
   if (typeof func !== 'function') {
@@ -79,10 +79,12 @@ function Panel({operations, onClick, onClickClean}) {
   let operationsFiltered =
     tabSelected === 'all'
       ? operations
-      : operations.filter(op => op.type === tabSelected);
+      : operations.filter(op => match(op.type, tabSelected));
   operationsFiltered = filter
     ? operationsFiltered.filter(
-        op => toLw(op.operationName).indexOf(filter) !== -1 || toLw(op.query).indexOf(filter) !== -1 ,
+        op =>
+          toLw(op.operationName).indexOf(filter) !== -1 ||
+          toLw(op.query).indexOf(filter) !== -1,
       )
     : operationsFiltered;
 
@@ -132,17 +134,24 @@ function Panel({operations, onClick, onClickClean}) {
       </div>
 
       <div className="panel-footer">
-        <div className="panel-block">Total: {operationsFiltered.length}  <a  onClick={onClickClean} className=" go-right is-pulled-right"><i className="fas fa-ban"/></a></div>
+        <div className="panel-block">
+          Total: {operationsFiltered.length}{' '}
+          <a onClick={onClickClean} className=" go-right is-pulled-right">
+            <i className="fas fa-ban" />
+          </a>
+        </div>
       </div>
     </nav>
   );
 }
 
+
 function PanelItem({operation, selected, onClick = noop}) {
   const isSelected = false;
-  const operationIconQuery = operation.type !== 'mutation' && 'fa-file-alt';
+  const operationIconQuery =
+    !match(operation.type, 'mutation') && 'fa-file-alt';
   const operationIconMutation =
-    operation.type === 'mutation' && 'fa-file-signature';
+    !operationIconQuery && 'fa-file-signature';
 
   return (
     <a
@@ -171,15 +180,20 @@ function NewApp() {
     });
   }, []);
 
-    const onClickClean = React.useCallback(()=> {
-        operations = [];
-        forceUpdate(operations.length);
-    }, [forceUpdate]);
+  const onClickClean = React.useCallback(() => {
+    operations = [];
+    forceUpdate(operations.length);
+  }, [forceUpdate]);
 
   return (
     <Layout>
       <Column isSidebar>
-        <Panel tick={tick} operations={operations} onClick={setOperation} onClickClean={onClickClean} />
+        <Panel
+          tick={tick}
+          operations={operations}
+          onClick={setOperation}
+          onClickClean={onClickClean}
+        />
       </Column>
       <Column>
         {operation && (
@@ -225,7 +239,7 @@ const Content = ({operation}) => {
   const [showContent, setShowContent] = React.useState(false);
 
   React.useEffect(() => {
-      setShowContent(operation.size<2000);
+    setShowContent(operation.size < 2000);
   }, [operation]);
 
   React.useEffect(() => {
@@ -240,15 +254,21 @@ const Content = ({operation}) => {
 
   return (
     <React.Fragment>
-      <div className={cl('label')}>Content {operation.size/1000}kb</div>
+      <div className={cl('label')}>Content {operation.size / 1000}kb</div>
       <div className="content-button is-flex">
-      {!showContent && <button onClick={()=>setShowContent(true)}>Show content with {operation.size/1000}kb</button>}
-      {showContent && <ReactJson
-        collapsed={1}
-        theme="summerfruit"
-        displayDataTypes={false}
-        src={JSON.parse(content)}
-      />}
+        {!showContent && (
+          <button onClick={() => setShowContent(true)}>
+            Show content with {operation.size / 1000}kb
+          </button>
+        )}
+        {showContent && (
+          <ReactJson
+            collapsed={1}
+            theme="summerfruit"
+            displayDataTypes={false}
+            src={JSON.parse(content)}
+          />
+        )}
       </div>
     </React.Fragment>
   );
@@ -259,19 +279,25 @@ ReactDOM.render(<NewApp />, document.getElementById('root'));
 function parseHar(entry) {
   const {request, response} = entry;
   const gqRequest = graphqlRequest(request);
-  if (!(gqRequest)) return null;
+  if (!gqRequest) return null;
 
   const ast = gql`
-  ${gqRequest.query}
+    ${gqRequest.query}
   `;
-  const name = ast.definitions.map(d =>  {
-    const selectionName = get(d, 'selectionSet.selections').map(s=> get(s,'name.value')).join('+');
-    const definitionName = get(d, 'name.value');
-    console.log('map name', definitionName, selectionName);
-    return definitionName || selectionName;
-  }  ).join('+')
-  
-  const type = get(ast, 'definitions').map(d=> d.operation).join('+');
+  const name = ast.definitions
+    .map(d => {
+      const selectionName = get(d, 'selectionSet.selections')
+        .map(s => get(s, 'name.value'))
+        .join('+');
+      const definitionName = get(d, 'name.value');
+      console.log('map name', definitionName, selectionName);
+      return definitionName || selectionName;
+    })
+    .join('+');
+
+  const type = get(ast, 'definitions')
+    .map(d => d.operation)
+    .join('+');
 
   const operation = {
     id: Math.random() * 100000000000000000,
@@ -295,19 +321,20 @@ function graphqlRequest(request) {
     return null;
   try {
     const gqRequest = JSON.parse(request.postData.text);
-    if ('operationName' in gqRequest) return gqRequest;
+
+    console.log('grapqhql Request', gqRequest);
+
+    if ('query' in gqRequest) return gqRequest;
   } catch (error) {}
   return null;
 }
 
 function handleHarEntry(entry) {
   const operation = parseHar(entry);
-  console.log('publising', operation, entry);
   if (operation) publish(GRAPHQL_CHANNEL, operation);
 }
 
 subscribe(GRAPHQL_CHANNEL, entry => {
-  console.log('received 1', entry);
   operations.push(entry);
 });
 

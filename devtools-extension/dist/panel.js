@@ -32470,7 +32470,7 @@ gql.disableExperimentalFragmentVariables = disableExperimentalFragmentVariables;
 var src = gql;
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n  ", "\n  "]);
+  var data = _taggedTemplateLiteral(["\n    ", "\n  "]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -32479,6 +32479,10 @@ function _templateObject() {
   return data;
 }
 var subscriptions = Object.create(null);
+
+var match = function match(s, m) {
+  return s.indexOf(m) > -1;
+};
 
 function subscribe(evt, func) {
   if (typeof func !== 'function') {
@@ -32562,7 +32566,7 @@ function Panel(_ref4) {
       setFilter = _React$useState4[1];
 
   var operationsFiltered = tabSelected === 'all' ? operations : operations.filter(function (op) {
-    return op.type === tabSelected;
+    return match(op.type, tabSelected);
   });
   operationsFiltered = filter ? operationsFiltered.filter(function (op) {
     return toLw(op.operationName).indexOf(filter) !== -1 || toLw(op.query).indexOf(filter) !== -1;
@@ -32617,7 +32621,7 @@ function Panel(_ref4) {
     className: "panel-footer"
   }, react.createElement("div", {
     className: "panel-block"
-  }, "Total: ", operationsFiltered.length, "  ", react.createElement("a", {
+  }, "Total: ", operationsFiltered.length, ' ', react.createElement("a", {
     onClick: onClickClean,
     className: " go-right is-pulled-right"
   }, react.createElement("i", {
@@ -32632,8 +32636,8 @@ function PanelItem(_ref6) {
       _onClick = _ref6$onClick === void 0 ? noop : _ref6$onClick;
 
   var isSelected = false;
-  var operationIconQuery = operation.type !== 'mutation' && 'fa-file-alt';
-  var operationIconMutation = operation.type === 'mutation' && 'fa-file-signature';
+  var operationIconQuery = !match(operation.type, 'mutation') && 'fa-file-alt';
+  var operationIconMutation = !operationIconQuery && 'fa-file-signature';
   return react.createElement("a", {
     className: "panel-block ".concat(isSelected ),
     onClick: function onClick() {
@@ -32796,7 +32800,8 @@ function graphqlRequest(request) {
 
   try {
     var gqRequest = JSON.parse(request.postData.text);
-    if ('operationName' in gqRequest) return gqRequest;
+    console.log('grapqhql Request', gqRequest);
+    if ('query' in gqRequest) return gqRequest;
   } catch (error) {}
 
   return null;
@@ -32804,12 +32809,10 @@ function graphqlRequest(request) {
 
 function handleHarEntry(entry) {
   var operation = parseHar(entry);
-  console.log('publising', operation, entry);
   if (operation) publish(GRAPHQL_CHANNEL, operation);
 }
 
 subscribe(GRAPHQL_CHANNEL, function (entry) {
-  console.log('received 1', entry);
   operations.push(entry);
 });
 
