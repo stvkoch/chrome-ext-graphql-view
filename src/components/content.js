@@ -4,12 +4,10 @@
 // chrome.devtools.*
 // chrome.extension.*
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from "react";
+import ReactDOM from "react-dom";
 // import JSONTree from 'react-json-tree';
-import ReactJson from 'react-json-view';
-import get from 'lodash.get';
-import gql from 'graphql-tag';
+import ReactJson from "react-json-view";
 
 import {
   match,
@@ -20,9 +18,9 @@ import {
   cl,
   toLw,
   noop
-} from '../utils';
+} from "../utils";
 
-export default function Content({operation}) {
+export default function Content({ operation }) {
   const [content, setContent] = React.useState(null);
   const [showContent, setShowContent] = React.useState(false);
 
@@ -42,7 +40,7 @@ export default function Content({operation}) {
 
   return (
     <React.Fragment>
-      <div className={cl('label')}>Content {operation.size / 1000}kb</div>
+      <div className={cl("label")}>Content {operation.size / 1000}kb</div>
       <div className="content-button is-flex">
         {!showContent && (
           <button onClick={() => setShowContent(true)}>
@@ -60,4 +58,4 @@ export default function Content({operation}) {
       </div>
     </React.Fragment>
   );
-};
+}

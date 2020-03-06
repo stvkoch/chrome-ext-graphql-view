@@ -1,14 +1,26 @@
-import React from 'react';
-import ReactJson from 'react-json-view';
-import GraphiQL from 'graphiql';
-// import { GraphiQL } from 'graphiql';
+import React from "react";
+import get from "lodash.get";
+import * as cuid from "cuid";
+import { Provider, connect } from "react-redux";
+import {
+  setResponse,
+  editQuery,
+  editHeaders,
+  editEndpoint,
+  editVariables,
+  getSelectedSessionIdFromRoot,
+  getSelectedWorkspaceId,
+  getSelectedSession,
+  Playground,
+  store
+} from "graphql-playground-react";
+import gql from "graphql-tag";
 
-
-import Layout from './layout';
-import Columns from './columns';
-import Column from './column';
-import Panel from './panel';
-import Content from './content';
+import Layout from "./layout";
+import Columns from "./columns";
+import Column from "./column";
+import Panel from "./panel";
+import Content from "./content";
 
 import {
   match,
@@ -19,14 +31,15 @@ import {
   cl,
   toLw,
   noop
-} from '../utils';
+} from "../utils";
 
 let operations = [];
-
 
 export default function NewApp() {
   const [tick, forceUpdate] = React.useState(0);
   const [operation, setOperation] = React.useState(null);
+
+  console.log("select op", operation);
 
   React.useEffect(() => {
     return initListenersOperations(() => {
@@ -41,91 +54,145 @@ export default function NewApp() {
   }, [forceUpdate, setOperation]);
 
   return (
-    <Layout>
-      <Column isSidebar>
-        <Panel
-          tick={tick}
-          operations={operations}
-          onClick={setOperation}
-          onClickClean={onClickClean}
-        />
-      </Column>
-      <Column>
-        <GqContent operation={operation} />
-        {/* {operation && (
-          <Columns>
-            <Column scrollabled is-half>
-              <div className={cl('rows')}>
-                <div className="row">
-                  <div className={cl('label')}>Query</div>
-                  <code>{operation.query}</code>
-                </div>
-                <div className="row">
-                  <div className={cl('label')}>Variables</div>
-                  <ReactJson
-                    collapsed={true}
-                    theme="summerfruit"
-                    displayDataTypes={false}
-                    src={operation.variables}
-                  />
-                </div>
-                <div className="row">
-                  <div className={cl('label')}>Headers</div>
-                  <ReactJson
-                    collapsed={true}
-                    theme="summerfruit"
-                    displayDataTypes={false}
-                    src={operation.headers}
-                  />
-                </div>
-              </div>
-            </Column>
-            <Column borderLeft scrollabled is-column is-half is-flex>
-              <Content operation={operation} />
-            </Column>
-          </Columns>
-        )} */}
-      </Column>
-    </Layout>
+    <Provider store={store}>
+      <Layout>
+        <Column isSidebar>
+          <Panel
+            tick={tick}
+            operations={operations}
+            onClick={setOperation}
+            onClickClean={onClickClean}
+          />
+        </Column>
+        <Column>
+          <GqContent operation={operation} />
+        </Column>
+      </Layout>
+    </Provider>
   );
 }
+const tabs = [];
+const GqContent = connect(
+  state => ({
+    workspaceId: getSelectedWorkspaceId(state),
+    sessionId: getSelectedSessionIdFromRoot(state),
+    session: getSelectedSession(state)
+  }),
+  {
+    setResponse,
+    editQuery,
+    editHeaders,
+    editEndpoint,
+    editVariables
+  }
+)(
+  ({
+    setResponse,
+    editQuery,
+    editHeaders,
+    editEndpoint,
+    editVariables,
+    workspaceId,
+    sessionId,
+    session,
+    operation
+  }) => {
+    const [content, setContent] = React.useState(null);
+    const [showContent, setShowContent] = React.useState(true);
 
-const GqContent = ({operation}) => {
-  const [content, setContent] = React.useState(null);
-  const [showContent, setShowContent] = React.useState(true);
+    React.useEffect(() => {
+      // setShowContent(operation.size < 2000);
+    }, [operation]);
 
-  React.useEffect(() => {
-    // setShowContent(operation.size < 2000);
-  }, [operation]);
+    React.useEffect(() => {
+      if (!showContent) {
+        return;
+      }
+      operation && operation.getContent(setContent);
+    }, [showContent, operation]);
 
-  React.useEffect(() => {
-    if (!showContent) {
-      return;
-    }
-    setContent(null);
-    operation && operation.getContent(setContent);
-  }, [showContent, operation]);
+    React.useEffect(() => {
+      if (!content) return;
+      console.log("actions", content, session, workspaceId, operation);
+      const response = {
+        date: JSON.stringify(JSON.parse(content), null, 2),
+        time: new Date(),
+        resultID: cuid(),
+        isSchemaError: false
+      };
 
-  // if (showContent && !content) return <div>Loading...</div>;
+      setResponse(workspaceId, session.id, response);
+      editQuery(operation.query);
+      editHeaders(
+        JSON.stringify(
+          operation.headers.reduce((ac, s) => ({ ...ac, [s.name]: s.value }))
+        )
+      );
+      editEndpoint(operation.url);
+      editVariables(JSON.stringify(operation.variables));
+    }, [content]);
 
-  const gqFetcher = React.useCallback((graphQLParams) => {
-    return fetch(operation.url, {
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(graphQLParams),
-    }).then(response => response.json());
-  }, [operation]);
+    // if (showContent && !content) return <div>Loading...</div>;
 
-  // return React.createElement(GraphiQL, {
-  //   fetcher: gqFetcher,
-  //   defaultVariableEditorOpen: true,
-  // });
-  return <GraphiQL response={JSON.parse(content)} query={operation.query} variables={operation.variables} operationName={operation.name} fetcher={gqFetcher} />
-};
+    // const gqFetcher = React.useCallback(
+    //   graphQLParams => {
+    //     if (operation && operation.url)
+    //       return fetch(operation.url, {
+    //         method: "post",
+    //         headers: { "Content-Type": "application/json" },
+    //         body: JSON.stringify(graphQLParams)
+    //       }).then(response => response.json());
+    //     return Promise.resolve({});
+    //   },
+    //   [operation]
+    // );
 
+    // return React.createElement(GraphiQL, {
+    //   fetcher: gqFetcher,
+    //   defaultVariableEditorOpen: true,
+    // });
+    // return (
+    //   <GraphiQL
+    //     response={content && JSON.parse(content)}
+    //     query={get(operation, "query", null)}
+    //     variables={get(operation, "variables", null)}
+    //     operationName={get(operation, "name", null)}
+    //     fetcher={gqFetcher}
+    //     defaultVariableEditorOpen
+    //   >
+    //     <GraphiQL.Footer>
+    //       // Footer works the same as Toolbar // add items by appending child
+    //       components
+    //     </GraphiQL.Footer>
+    //   </GraphiQL>
+    // );
+    // operation
+    //   ? tabs.push({
+    //       endpoint: get(operation, "url"),
+    //       query: get(operation, "query"),
+    //       name: get(operation, "name"),
+    //       variables: get(operation, "variables"),
+    //       responses: [content],
+    //       headers: get(operation, "headers")
+    //     })
+    //   : null;
+    // console.log("tabs", tabs);
+    const tabs = [
+      {
+        endpoint: "",
+        query: "",
+        name: "",
+        variables: "",
+        responses: [],
+        headers: ""
+      }
+    ];
+    return <Playground endpoint={null} tabs={tabs} />;
+  }
+);
 
 function parseHar(entry) {
-  const {request, response} = entry;
+  const { request, response } = entry;
   const gqRequest = graphqlRequest(request);
   if (!gqRequest) return null;
 
@@ -134,17 +201,17 @@ function parseHar(entry) {
   `;
   const name = ast.definitions
     .map(d => {
-      const selectionName = get(d, 'selectionSet.selections')
-        .map(s => get(s, 'name.value'))
-        .join('+');
-      const definitionName = get(d, 'name.value');
+      const selectionName = get(d, "selectionSet.selections")
+        .map(s => get(s, "name.value"))
+        .join("+");
+      const definitionName = get(d, "name.value");
       return definitionName || selectionName;
     })
-    .join('+');
+    .join("+");
 
-  const type = get(ast, 'definitions')
+  const type = get(ast, "definitions")
     .map(d => d.operation)
-    .join('+');
+    .join("+");
 
   const operation = {
     id: Math.random() * 100000000000000000,
@@ -154,23 +221,23 @@ function parseHar(entry) {
     headers: request.headers,
     url: request.url,
     size: response.headersSize + response.bodySize,
-    getContent: entry.getContent.bind(entry),
+    getContent: entry.getContent.bind(entry)
   };
 
   return operation;
 }
 
-const GRAPHQL_CHANNEL = 'gqRequest';
+const GRAPHQL_CHANNEL = "gqRequest";
 
 function graphqlRequest(request) {
-  if (!(request.method === 'POST' && request.postData && request.postData.text))
+  if (!(request.method === "POST" && request.postData && request.postData.text))
     return null;
   try {
     const gqRequest = JSON.parse(request.postData.text);
 
-    console.log('grapqhql Request', gqRequest);
+    console.log("grapqhql Request", gqRequest);
 
-    if ('query' in gqRequest) return gqRequest;
+    if ("query" in gqRequest) return gqRequest;
   } catch (error) {}
   return null;
 }
@@ -185,15 +252,15 @@ subscribe(GRAPHQL_CHANNEL, entry => {
 });
 
 function initListenersOperations(subcribeCallback) {
-  if (!(chrome && chrome.devtools)) return false;
+  if (!(chrome && chrome.devtools)) return;
 
   chrome.devtools.network.getHAR(function(result) {
     var entries = result.entries;
 
     if (!entries.length) {
       console.log(
-        'Graphql extension suggests that you reload the page to track' +
-          ' all graphql requests',
+        "Graphql extension suggests that you reload the page to track" +
+          " all graphql requests"
       );
     }
 
