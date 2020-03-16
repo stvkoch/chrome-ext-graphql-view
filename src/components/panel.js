@@ -70,7 +70,7 @@ export default function Panel({operations, onClick, onClickClean, operation}) {
             key={oper.id}
             onClick={onClick}
             operation={oper}
-            selected={oper.id===operation.id}
+            selected={operation && oper && oper.id===operation.id}
           />
         ))}
       </div>

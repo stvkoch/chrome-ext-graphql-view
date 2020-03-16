@@ -23,9 +23,11 @@ export default function PanelItem({operation, onClick = noop, selected: isSelect
   const operationIconMutation =
     !operationIconQuery && 'fa-file-signature';
 
+  const hasError = operation.hasError;
+
   return (
     <a
-      className={`panel-block ${isSelected && 'is-active'}`}
+      className={`panel-block ${isSelected && 'is-active has-text-info'} ${hasError && 'has-text-danger'}`}
       onClick={() => onClick(operation)}>
       <span className="panel-icon">
         <i
