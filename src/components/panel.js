@@ -13,7 +13,7 @@ import {
   noop
 } from '../utils';
 
-export default function Panel({operations, onClick, onClickClean}) {
+export default function Panel({operations, onClick, onClickClean, operation}) {
   const [tabSelected, setTabSelected] = React.useState('all');
   const [filter, setFilter] = React.useState(null);
 
@@ -65,11 +65,12 @@ export default function Panel({operations, onClick, onClickClean}) {
       </div>
 
       <div className="panel-content">
-        {operationsFiltered.map(operation => (
+        {operationsFiltered.map(oper => (
           <PanelItem
-            key={operation.id}
+            key={oper.id}
             onClick={onClick}
-            operation={operation}
+            operation={oper}
+            selected={oper.id===operation.id}
           />
         ))}
       </div>

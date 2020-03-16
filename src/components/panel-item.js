@@ -17,8 +17,7 @@ import {
   noop
 } from '../utils';
 
-export default function PanelItem({operation, onClick = noop}) {
-  const isSelected = false;
+export default function PanelItem({operation, onClick = noop, selected: isSelected}) {
   const operationIconQuery =
     !match(operation.type, 'mutation') && 'fa-file-alt';
   const operationIconMutation =

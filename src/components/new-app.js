@@ -62,6 +62,7 @@ export default function NewApp() {
             operations={operations}
             onClick={setOperation}
             onClickClean={onClickClean}
+            operation={operation}
           />
         </Column>
         <Column>
@@ -132,51 +133,7 @@ const GqContent = connect(
       editVariables(JSON.stringify(operation.variables));
     }, [content]);
 
-    // if (showContent && !content) return <div>Loading...</div>;
-
-    // const gqFetcher = React.useCallback(
-    //   graphQLParams => {
-    //     if (operation && operation.url)
-    //       return fetch(operation.url, {
-    //         method: "post",
-    //         headers: { "Content-Type": "application/json" },
-    //         body: JSON.stringify(graphQLParams)
-    //       }).then(response => response.json());
-    //     return Promise.resolve({});
-    //   },
-    //   [operation]
-    // );
-
-    // return React.createElement(GraphiQL, {
-    //   fetcher: gqFetcher,
-    //   defaultVariableEditorOpen: true,
-    // });
-    // return (
-    //   <GraphiQL
-    //     response={content && JSON.parse(content)}
-    //     query={get(operation, "query", null)}
-    //     variables={get(operation, "variables", null)}
-    //     operationName={get(operation, "name", null)}
-    //     fetcher={gqFetcher}
-    //     defaultVariableEditorOpen
-    //   >
-    //     <GraphiQL.Footer>
-    //       // Footer works the same as Toolbar // add items by appending child
-    //       components
-    //     </GraphiQL.Footer>
-    //   </GraphiQL>
-    // );
-    // operation
-    //   ? tabs.push({
-    //       endpoint: get(operation, "url"),
-    //       query: get(operation, "query"),
-    //       name: get(operation, "name"),
-    //       variables: get(operation, "variables"),
-    //       responses: [content],
-    //       headers: get(operation, "headers")
-    //     })
-    //   : null;
-    // console.log("tabs", tabs);
+    // empty tab to populate with selected query
     const tabs = [
       {
         endpoint: "",
