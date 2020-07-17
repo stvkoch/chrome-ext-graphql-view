@@ -1,8 +1,8 @@
-const HtmlWebPackPlugin = require("html-webpack-plugin");
+const HtmlWebPackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   output: {
-    chunkFilename: "./dist/[id].js"
+    chunkFilename: './devtools-extension/[id].js',
   },
 
   module: {
@@ -11,31 +11,31 @@ module.exports = {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
-          loader: "babel-loader"
-        }
+          loader: 'babel-loader',
+        },
       },
       {
         test: /\.(png|jpe?g|gif)$/i,
         use: [
           {
-            loader: "file-loader"
-          }
-        ]
+            loader: 'file-loader',
+          },
+        ],
       },
       {
         test: /\.html$/,
         use: [
           {
-            loader: "html-loader"
-          }
-        ]
-      }
-    ]
+            loader: 'html-loader',
+          },
+        ],
+      },
+    ],
   },
   plugins: [
     new HtmlWebPackPlugin({
-      template: "./src/index.html",
-      filename: "./panel.html"
-    })
-  ]
-};
+      template: './src/index.html',
+      filename: './panel.html',
+    }),
+  ],
+}
