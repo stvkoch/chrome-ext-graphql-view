@@ -109,15 +109,19 @@ const GqContent = connect(
       if (!showContent) {
         return
       }
-      operation && operation.getContent(setContent)
+      operation &&
+        operation.getContent((data) => {
+          const contentParsed = JSON.parse(data)
+          setContent(contentParsed[operation.indx])
+        })
     }, [showContent, operation])
 
     React.useEffect(() => {
       if (!content) return
       console.log('actions', content, session, workspaceId, operation)
-      const contentParsed = JSON.parse(content)
+      // const contentParsed = JSON.parse(content)
       const response = {
-        date: JSON.stringify(contentParsed, null, 2),
+        date: JSON.stringify(content, null, 2),
         time: new Date(),
         resultID: cuid(),
         isSchemaError: false,
@@ -157,7 +161,7 @@ function parseHar(entry) {
   const gqRequests = graphqlRequest(request)
   if (!gqRequests) return null
 
-  return gqRequests.map((gqRequest) => {
+  return gqRequests.map((gqRequest, indx) => {
     const ast = gql`
       ${gqRequest.query}
     `
@@ -177,6 +181,7 @@ function parseHar(entry) {
 
     const operation = {
       id: Math.random() * 100000000000000000,
+      indx,
       name,
       type,
       ...gqRequest,
